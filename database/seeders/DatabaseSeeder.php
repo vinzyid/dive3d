@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Role;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -14,6 +15,16 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         // --- Akun default (firstOrCreate agar tidak duplikat) ---
+        $adminRole = Role::firstOrCreate(
+            ['name' => 'admin'],
+            ['description' => 'Administrator']
+        );
+
+        $userRole = Role::firstOrCreate(
+            ['name' => 'user'],
+            ['description' => 'Regular user']
+        );
+
         \App\Models\Admin::firstOrCreate(
             ['email' => 'admin@email.com'],
             [
@@ -22,8 +33,7 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
-
-        User::firstOrCreate(
+        $defaultUser = User::firstOrCreate(
             ['email' => 'rafi@email.com'],
             [
                 'name' => 'Rafi',

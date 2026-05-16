@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use App\Models\Badge;
+use App\Models\Role;
 use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
@@ -53,5 +54,15 @@ class User extends Authenticatable
         return $this->belongsToMany(Badge::class, 'user_badges')
             ->withPivot('earned_at')
             ->withTimestamps();
+    }
+
+    public function isAdmin(): bool
+    {
+        return false; // Admin sekarang di tabel terpisah
+    }
+
+    public function isUser(): bool
+    {
+        return true;
     }
 }

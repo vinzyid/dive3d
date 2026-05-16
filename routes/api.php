@@ -41,16 +41,22 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/my-uploads', [ContentController::class, 'myUploads']);
 
     // Admin review (diproteksi)
-    Route::prefix('/admin')->group(function () {
-        Route::get('/pending', [ContentController::class, 'pending']);
-        Route::post('/approve/{id}', [ContentController::class, 'approve']);
-        Route::post('/reject/{id}', [ContentController::class, 'reject']);
-        Route::delete('/gallery/{id}', [ContentController::class, 'destroy']);
-        
-        // Manajemen Modul
-        Route::post('/modules', [ModuleController::class, 'store']);
-        Route::put('/modules/{slug}', [ModuleController::class, 'update']);
-        Route::delete('/modules/{slug}', [ModuleController::class, 'destroy']);
+    Route::middleware(\App\Http\Middleware\EnsureAdminRole::class)->group(function () {
+        Route::prefix('/admin')->group(function () {
+            Route::get('/pending', [ContentController::class, 'pending']);
+            Route::post('/approve/{id}', [ContentController::class, 'approve']);
+            Route::post('/reject/{id}', [ContentController::class, 'reject']);
+            Route::delete('/gallery/{id}', [ContentController::class, 'destroy']);
+
+            // Manajemen Modul
+            Route::post('/modules', [ModuleController::class, 'store']);
+            Route::put('/modules/{slug}', [ModuleController::class, 'update']);
+            Route::delete('/modules/{slug}', [ModuleController::class, 'destroy']);
+        });
+
+        // Manajemen soal oleh Admin
+        Route::post('/quiz/questions', [QuizQuestionController::class, 'store']);
+        Route::delete('/quiz/questions/{id}', [QuizQuestionController::class, 'destroy']);
     });
 
     // Dashboard (butuh auth agar dapat nama user asli)
@@ -62,8 +68,6 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Rute Quiz
     Route::post('/quiz/submit', [QuizController::class, 'submit']);
-    Route::post('/quiz/questions', [QuizQuestionController::class, 'store']);
-    Route::delete('/quiz/questions/{id}', [QuizQuestionController::class, 'destroy']);
 
     // Rute Sertifikat
     Route::get('/certificates', [CertificateController::class, 'index']);
@@ -91,8 +95,5 @@ Route::get('/quizzes/{slug}', [QuizController::class, 'show']);
 // 2. Submit jawaban untuk dihitung skornya di Backend
 Route::post('/quizzes/submit', [QuizController::class, 'submit']);
 
-// 3. Manajemen soal oleh Admin
-Route::post('/quizzes/questions', [QuizQuestionController::class, 'store']);
-Route::delete('/quizzes/questions/{id}', [QuizQuestionController::class, 'destroy']);
 
 

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Role;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -18,6 +19,11 @@ class AuthController extends Controller
             'password' => 'required|string|min:8',
         ]);
 
+        $defaultRole = Role::firstOrCreate(
+            ['name' => 'user'],
+            ['description' => 'Regular user']
+        );
+
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
@@ -30,7 +36,7 @@ class AuthController extends Controller
             'message' => 'Registrasi berhasil',
             'user'    => $user,
             'token'   => $token,
-            'role'    => $user->role ?? 'user',
+            'role'    => $user->role_name,
         ], 201);
     }
 

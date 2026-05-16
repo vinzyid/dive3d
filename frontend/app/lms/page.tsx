@@ -572,7 +572,7 @@ export default function LMSPage() {
         </div>
         <div className="flex items-center gap-4">
           <span className="text-sm font-bold text-white pr-2">
-            Halo, {userName || 'Pengguna'}!
+            Halo, {userName || (typeof window !== 'undefined' && localStorage.getItem('user_role') === 'admin' ? 'Admin' : 'Pengguna')}!
           </span>
           {view !== 'login' && (
             <button

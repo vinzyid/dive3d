@@ -244,7 +244,7 @@ export default function HomePage() {
             {isLoggedIn ? (
               <div className="flex items-center gap-4 px-2">
                 <span className={`text-sm font-bold ${isDark ? 'text-white' : 'text-blue-900'}`}>
-                  Halo, {userName || 'Pengguna'}!
+                  Halo, {userName || (isAdmin ? 'Admin' : 'Pengguna')}!
                 </span>
                 <button
                   onClick={() => {
