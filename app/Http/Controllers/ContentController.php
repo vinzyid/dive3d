@@ -52,6 +52,7 @@ class ContentController extends Controller
 
         Content::create([
             'user_id' => Auth::id(),
+            'user_type' => get_class(Auth::user()),
             'title' => $request->title,
             'category' => $request->category,
             'author' => $request->author,

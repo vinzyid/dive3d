@@ -14,12 +14,11 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         // --- Akun default (firstOrCreate agar tidak duplikat) ---
-        User::firstOrCreate(
+        \App\Models\Admin::firstOrCreate(
             ['email' => 'admin@email.com'],
             [
                 'name' => 'Admin',
                 'password' => Hash::make('admin123'),
-                'role' => 'admin',
             ]
         );
 
@@ -29,7 +28,6 @@ class DatabaseSeeder extends Seeder
             [
                 'name' => 'Rafi',
                 'password' => Hash::make('password'),
-                'role' => 'user',
             ]
         );
 

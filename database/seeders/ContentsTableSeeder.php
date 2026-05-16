@@ -19,6 +19,7 @@ class ContentsTableSeeder extends Seeder
         \DB::table('contents')->insert([
             [
                 'user_id' => 1,
+                'user_type' => 'App\Models\Admin',
                 'title' => 'Terumbu Karang Raja Ampat',
                 'category' => 'Pemandangan',
                 'author' => 'Admin Dive3D',
@@ -29,6 +30,7 @@ class ContentsTableSeeder extends Seeder
             ],
             [
                 'user_id' => 1,
+                'user_type' => 'App\Models\Admin',
                 'title' => 'Ikan Badut di Anemon',
                 'category' => 'Biota Laut',
                 'author' => 'Rossi',
@@ -39,6 +41,7 @@ class ContentsTableSeeder extends Seeder
             ],
             [
                 'user_id' => 1,
+                'user_type' => 'App\Models\Admin',
                 'title' => 'Penyu Hijau Berenang',
                 'category' => 'Biota Laut',
                 'author' => 'Dive Master',

@@ -41,7 +41,17 @@ class AuthController extends Controller
             'password' => 'required|string',
         ]);
 
-        $user = User::where('email', $request->email)->first();
+        $user = null;
+        $role = 'user';
+
+        // Cek apakah admin
+        if ($request->email === 'admin@email.com') {
+            $user = \App\Models\Admin::where('email', $request->email)->first();
+            $role = 'admin';
+        } else {
+            $user = User::where('email', $request->email)->first();
+            $role = 'user';
+        }
 
         if (!$user || !Hash::check($request->password, $user->password)) {
             throw ValidationException::withMessages([
@@ -55,7 +65,7 @@ class AuthController extends Controller
             'message' => 'Login berhasil',
             'user'    => $user,
             'token'   => $token,
-            'role'    => $user->role,
+            'role'    => $role,
         ]);
     }
 
