@@ -1,9 +1,9 @@
 'use client';
 
-import { useEffect } from 'react';
+import { Suspense, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 
-export default function AuthCallbackPage() {
+function AuthCallbackHandler() {
     const searchParams = useSearchParams();
 
     useEffect(() => {
@@ -28,11 +28,28 @@ export default function AuthCallbackPage() {
     return (
         <div className="min-h-screen bg-[#00040a] flex items-center justify-center text-white">
             <div className="text-center">
-                <div className="text-4xl mb-4 animate-spin">⟳</div>
+                <div className="w-12 h-12 border-4 border-cyan-500/30 border-t-cyan-400 rounded-full animate-spin mx-auto mb-4" />
                 <p className="text-cyan-400 font-bold tracking-widest uppercase text-sm">
                     Menyelesaikan login...
                 </p>
             </div>
         </div>
+    );
+}
+
+export default function AuthCallbackPage() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen bg-[#00040a] flex items-center justify-center text-white">
+                <div className="text-center">
+                    <div className="w-12 h-12 border-4 border-cyan-500/30 border-t-cyan-400 rounded-full animate-spin mx-auto mb-4" />
+                    <p className="text-cyan-400 font-bold tracking-widest uppercase text-sm">
+                        Memuat...
+                    </p>
+                </div>
+            </div>
+        }>
+            <AuthCallbackHandler />
+        </Suspense>
     );
 }
