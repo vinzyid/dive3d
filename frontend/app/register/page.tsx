@@ -36,6 +36,10 @@ export default function RegisterPage() {
   const [showConfirm, setShowConfirm]     = useState(false);
   const [isLoading, setIsLoading]         = useState(false);
   const [fieldErrors, setFieldErrors]     = useState<Record<string, string>>({});
+  const [registered, setRegistered]       = useState(false);
+  const [registeredEmail, setRegisteredEmail] = useState('');
+  const [resendLoading, setResendLoading] = useState(false);
+  const [resendSent, setResendSent]       = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -82,17 +86,30 @@ export default function RegisterPage() {
         throw new Error(data.message || 'Pendaftaran gagal, coba lagi.');
       }
 
-      localStorage.setItem('auth_token', data.token);
-      localStorage.setItem('user_role',  data.role ?? 'user');
-      localStorage.setItem('user_name',  data.user.name);
-      localStorage.setItem('user_email', data.user.email);
-
-      toast.success('Akun berhasil dibuat!');
-      router.push('/dashboard');
+      // 201: akun dibuat, email verifikasi dikirim — belum ada token
+      setRegisteredEmail(email);
+      setRegistered(true);
     } catch (error: any) {
       toast.error(error.message);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleResend = async () => {
+    setResendLoading(true);
+    setResendSent(false);
+    try {
+      await fetch(`${API_URL}/api/email/resend`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify({ email: registeredEmail }),
+      });
+      setResendSent(true);
+    } catch {
+      toast.error('Gagal mengirim ulang. Coba lagi.');
+    } finally {
+      setResendLoading(false);
     }
   };
 
@@ -103,6 +120,50 @@ export default function RegisterPage() {
 
   const clearError = (field: string) =>
     setFieldErrors((prev) => { const n = { ...prev }; delete n[field]; return n; });
+
+  if (registered) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#00040a] p-4 relative overflow-hidden">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[400px] bg-cyan-500/10 blur-[120px] rounded-full pointer-events-none" />
+        <div className="relative z-10 w-full max-w-md text-center">
+          <div className="bg-white/[0.03] backdrop-blur-xl border border-white/10 rounded-2xl p-10 shadow-2xl">
+            <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center">
+              <svg className="w-10 h-10 text-cyan-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+              </svg>
+            </div>
+            <h2 className="text-2xl font-black text-white mb-2">Cek Email Anda!</h2>
+            <p className="text-gray-400 text-sm mb-2">
+              Link verifikasi telah dikirim ke:
+            </p>
+            <p className="text-cyan-400 font-semibold text-sm mb-6 break-all">{registeredEmail}</p>
+            <p className="text-gray-500 text-xs mb-8">
+              Klik link di email untuk mengaktifkan akun Anda. Link kedaluwarsa dalam 60 menit. Pastikan cek folder Spam jika tidak ada di kotak masuk.
+            </p>
+
+            {resendSent ? (
+              <p className="text-green-400 text-sm font-semibold mb-4">Email verifikasi berhasil dikirim ulang!</p>
+            ) : (
+              <button
+                onClick={handleResend}
+                disabled={resendLoading}
+                className="w-full py-3 px-4 mb-4 bg-white/5 hover:bg-white/10 border border-white/10 text-gray-300 font-semibold rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {resendLoading ? 'Mengirim...' : 'Kirim Ulang Email Verifikasi'}
+              </button>
+            )}
+
+            <Link
+              href="/?login=true"
+              className="text-cyan-400 text-sm font-semibold hover:text-cyan-300 transition-colors"
+            >
+              Sudah verifikasi? Masuk di sini
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#00040a] p-4 relative overflow-hidden">

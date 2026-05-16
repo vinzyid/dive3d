@@ -33,6 +33,11 @@ function HomeContent() {
   const [error, setError] = useState('');
   const [lockoutCountdown, setLockoutCountdown] = useState(0);
   const [videoDuration, setVideoDuration] = useState('00:00');
+  const [emailNotVerified, setEmailNotVerified] = useState(false);
+  const [unverifiedEmail, setUnverifiedEmail] = useState('');
+  const [resendLoading, setResendLoading] = useState(false);
+  const [resendSent, setResendSent] = useState(false);
+  const [verifiedSuccess, setVerifiedSuccess] = useState(false);
 
   const MAX_ATTEMPTS = 5;
   const LOCKOUT_DURATION = 15 * 60 * 1000; // 15 menit dalam ms
@@ -72,6 +77,13 @@ function HomeContent() {
       });
 
       const data = await response.json();
+
+      if (response.status === 403 && data.error === 'email_not_verified') {
+        setEmailNotVerified(true);
+        setUnverifiedEmail(email);
+        setResendSent(false);
+        return;
+      }
 
       if (!response.ok) {
         // Gagal — tambah hitungan
@@ -115,6 +127,23 @@ function HomeContent() {
       setError(err.message);
     } finally {
       setIsLoginProcessing(false);
+    }
+  };
+
+  const handleResendVerification = async () => {
+    setResendLoading(true);
+    setResendSent(false);
+    try {
+      await fetch(`${API_URL}/api/email/resend`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify({ email: unverifiedEmail }),
+      });
+      setResendSent(true);
+    } catch {
+      // silent
+    } finally {
+      setResendLoading(false);
     }
   };
 
@@ -182,6 +211,15 @@ function HomeContent() {
       setShowLoginModal(true);
       if (searchParams.get('error') === 'google_failed') {
         setError('Login dengan Google gagal. Coba lagi atau gunakan email & kata sandi.');
+      }
+      if (searchParams.get('error') === 'invalid_verification') {
+        setError('Link verifikasi tidak valid. Minta link baru.');
+      }
+      if (searchParams.get('error') === 'expired_verification') {
+        setError('Link verifikasi sudah kedaluwarsa. Minta link baru.');
+      }
+      if (searchParams.get('verified') === '1') {
+        setVerifiedSuccess(true);
       }
       // Clean up the URL after opening
       const newUrl = window.location.pathname;
@@ -503,10 +541,10 @@ function HomeContent() {
       {/* LOGIN MODAL */}
       {showLoginModal && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowLoginModal(false)}></div>
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => { setShowLoginModal(false); setEmailNotVerified(false); setVerifiedSuccess(false); setError(''); }}></div>
           <div className="w-full max-w-md p-8 rounded-[28px] bg-[#00040a] border border-white/10 shadow-2xl relative z-10 animate-in zoom-in-95 duration-300">
             <button
-              onClick={() => setShowLoginModal(false)}
+              onClick={() => { setShowLoginModal(false); setEmailNotVerified(false); setVerifiedSuccess(false); setError(''); }}
               className="absolute top-6 right-6 text-gray-500 hover:text-white transition-colors"
             >
               ✕
@@ -518,9 +556,34 @@ function HomeContent() {
               <p className="text-sm text-gray-400">Silakan login untuk mengakses Sistem</p>
             </div>
 
+            {verifiedSuccess && (
+              <div className="mb-4 p-3 rounded-xl bg-green-500/10 border border-green-500/30 text-green-400 text-sm font-medium text-center">
+                Email berhasil diverifikasi! Silakan masuk.
+              </div>
+            )}
+
             {error && (
-              <div className="mb-6 p-4 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-sm font-medium text-center animate-pulse">
+              <div className="mb-4 p-4 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-sm font-medium text-center animate-pulse">
                 {error}
+              </div>
+            )}
+
+            {emailNotVerified && (
+              <div className="mb-4 p-4 rounded-xl bg-yellow-500/10 border border-yellow-500/30 text-sm">
+                <p className="text-yellow-300 font-semibold mb-1">Email belum diverifikasi</p>
+                <p className="text-yellow-200/70 text-xs mb-3">Cek kotak masuk <span className="font-mono">{unverifiedEmail}</span> dan klik link verifikasi.</p>
+                {resendSent ? (
+                  <p className="text-green-400 text-xs font-semibold">Email verifikasi berhasil dikirim ulang!</p>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleResendVerification}
+                    disabled={resendLoading}
+                    className="text-xs text-yellow-300 underline underline-offset-2 hover:text-yellow-200 disabled:opacity-50"
+                  >
+                    {resendLoading ? 'Mengirim...' : 'Kirim ulang email verifikasi'}
+                  </button>
+                )}
               </div>
             )}
 

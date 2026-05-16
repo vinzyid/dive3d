@@ -10,6 +10,7 @@ use App\Http\Controllers\UserProgressController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\GoogleAuthController;
 use App\Http\Controllers\Api\RewardController;
+use App\Http\Controllers\Api\EmailVerificationController;
 use App\Http\Controllers\BadgeController;
 use App\Http\Controllers\QuizController;
 use App\Http\Controllers\QuizQuestionController;
@@ -22,6 +23,13 @@ Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:5,
 // Google OAuth
 Route::get('/auth/google', [GoogleAuthController::class, 'redirect']);
 Route::get('/auth/google/callback', [GoogleAuthController::class, 'callback']);
+
+// Email verification
+Route::get('/email/verify/{id}/{hash}', [EmailVerificationController::class, 'verify'])
+    ->middleware('signed')
+    ->name('verification.verify');
+Route::post('/email/resend', [EmailVerificationController::class, 'resend'])
+    ->middleware('throttle:3,1');
 
 // Upload (bebas CSRF, tapi butuh auth agar user_id tersimpan)
 Route::post('/upload', [ContentController::class, 'upload'])->middleware('auth:sanctum');

@@ -31,13 +31,10 @@ class AuthController extends Controller
             'password' => Hash::make($request->password),
         ]);
 
-        $token = $user->createToken('auth_token')->plainTextToken;
+        $user->sendEmailVerificationNotification();
 
         return response()->json([
-            'message' => 'Registrasi berhasil',
-            'user'    => $user,
-            'token'   => $token,
-            'role'    => $user->role_name,
+            'message' => 'Akun berhasil dibuat! Silakan cek email Anda untuk verifikasi.',
         ], 201);
     }
 
@@ -66,6 +63,13 @@ class AuthController extends Controller
             throw ValidationException::withMessages([
                 'email' => ['Alamat email atau kata sandi salah.'],
             ]);
+        }
+
+        if (!$user->hasVerifiedEmail()) {
+            return response()->json([
+                'message' => 'Email belum diverifikasi. Silakan cek email Anda.',
+                'error'   => 'email_not_verified',
+            ], 403);
         }
 
         $token = $user->createToken('auth_token')->plainTextToken;

@@ -10,7 +10,8 @@
       "Bash(composer require *)",
       "Bash(composer self-update *)",
       "Bash(composer *)",
-      "Bash(Get-ChildItem *)"
+      "Bash(Get-ChildItem *)",
+      "PowerShell(New-Item *)"
     ]
   }
 }
