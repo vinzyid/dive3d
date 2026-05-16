@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Admin;
 use App\Models\Role;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
@@ -38,6 +39,15 @@ class DatabaseSeeder extends Seeder
             [
                 'name' => 'Rafi',
                 'password' => Hash::make('password'),
+            ]
+        );
+
+        // --- Akun admin di tabel admins (terpisah dari users) ---
+        Admin::firstOrCreate(
+            ['email' => 'admin@email.com'],
+            [
+                'name'     => 'Admin',
+                'password' => Hash::make('admin123'),
             ]
         );
 

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Admin;
 use App\Models\Role;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -47,18 +48,20 @@ class AuthController extends Controller
             'password' => 'required|string',
         ]);
 
-        $user = null;
-        $role = 'user';
-
-        // Cek apakah admin
-        if ($request->email === 'admin@email.com') {
-            $user = \App\Models\Admin::where('email', $request->email)->first();
-            $role = 'admin';
-        } else {
-            $user = User::where('email', $request->email)->first();
-            $role = 'user';
+        // Cek tabel admins terlebih dahulu
+        $admin = Admin::where('email', $request->email)->first();
+        if ($admin && Hash::check($request->password, $admin->password)) {
+            $token = $admin->createToken('admin_token')->plainTextToken;
+            return response()->json([
+                'message' => 'Login berhasil',
+                'user'    => $admin,
+                'token'   => $token,
+                'role'    => 'admin',
+            ]);
         }
 
+        // Cek tabel users
+        $user = User::where('email', $request->email)->first();
         if (!$user || !Hash::check($request->password, $user->password)) {
             throw ValidationException::withMessages([
                 'email' => ['Alamat email atau kata sandi salah.'],
@@ -71,7 +74,7 @@ class AuthController extends Controller
             'message' => 'Login berhasil',
             'user'    => $user,
             'token'   => $token,
-            'role'    => $role,
+            'role'    => 'user',
         ]);
     }
 
