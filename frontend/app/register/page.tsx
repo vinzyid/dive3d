@@ -243,7 +243,7 @@ export default function RegisterPage() {
           {/* Link ke Login */}
           <p className="text-center text-gray-500 text-sm mt-6">
             Sudah punya akun?{' '}
-            <Link href="/login" className="text-cyan-400 font-semibold hover:text-cyan-300 transition-colors">
+            <Link href="/?login=true" className="text-cyan-400 font-semibold hover:text-cyan-300 transition-colors">
               Masuk di sini
             </Link>
           </p>

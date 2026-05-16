@@ -85,7 +85,7 @@ export default function DashboardPage() {
     useEffect(() => {
         const token = localStorage.getItem('auth_token');
         if (!token) {
-            window.location.href = '/login';
+            window.location.href = '/?login=true';
             return;
         }
 

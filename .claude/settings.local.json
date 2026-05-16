@@ -9,7 +9,8 @@
       "Bash(php *)",
       "Bash(composer require *)",
       "Bash(composer self-update *)",
-      "Bash(composer *)"
+      "Bash(composer *)",
+      "Bash(Get-ChildItem *)"
     ]
   }
 }

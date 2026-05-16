@@ -13,7 +13,7 @@ function AuthCallbackHandler() {
         const error = searchParams.get('error');
 
         if (error || !token) {
-            window.location.href = '/login?error=google_failed';
+            window.location.href = '/?login=true&error=google_failed';
             return;
         }
 
