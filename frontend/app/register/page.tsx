@@ -6,7 +6,7 @@ import toast from 'react-hot-toast';
 import { useRouter } from 'next/navigation';
 import { Eye, EyeOff } from '../../components/DiveIcons';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api-dive3d.up.railway.app';
 
 function PasswordStrength({ password }: { password: string }) {
   if (!password) return null;
