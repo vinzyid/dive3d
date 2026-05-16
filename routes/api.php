@@ -8,6 +8,8 @@ use App\Http\Controllers\ContentController;
 use App\Http\Controllers\ModuleController;
 use App\Http\Controllers\UserProgressController;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\GoogleAuthController;
+use App\Http\Controllers\Api\RewardController;
 use App\Http\Controllers\BadgeController;
 use App\Http\Controllers\QuizController;
 use App\Http\Controllers\QuizQuestionController;
@@ -16,6 +18,10 @@ use App\Http\Controllers\CertificateController;
 // Endpoint Autentikasi
 Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:3,1');
 Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:5,1');
+
+// Google OAuth
+Route::get('/auth/google', [GoogleAuthController::class, 'redirect']);
+Route::get('/auth/google/callback', [GoogleAuthController::class, 'callback']);
 
 // Upload (bebas CSRF, tapi butuh auth agar user_id tersimpan)
 Route::post('/upload', [ContentController::class, 'upload'])->middleware('auth:sanctum');
@@ -72,6 +78,10 @@ Route::middleware('auth:sanctum')->group(function () {
     // Rute Sertifikat
     Route::get('/certificates', [CertificateController::class, 'index']);
     Route::post('/certificates/generate', [CertificateController::class, 'generate']);
+
+    // Rute Hadiah (Rewards)
+    Route::get('/rewards/eligibility', [RewardController::class, 'getEligibility']);
+    Route::post('/rewards/claim', [RewardController::class, 'claim']);
 
     // Rute Logout
     Route::post('/logout', [AuthController::class, 'logout']);

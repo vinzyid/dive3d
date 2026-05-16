@@ -32,6 +32,8 @@ export default function DashboardPage() {
     const [forceTour, setForceTour] = useState(false);
     const [showCertHistoryModal, setShowCertHistoryModal] = useState(false);
     const [loadingProgress, setLoadingProgress] = useState(0);
+    const [claimedRewards, setClaimedRewards] = useState<string[]>([]);
+    const [claimLoading, setClaimLoading] = useState<string | null>(null);
 
     useEffect(() => {
         if (forceTour) {
@@ -86,6 +88,8 @@ export default function DashboardPage() {
             window.location.href = '/login';
             return;
         }
+
+        // Fetch Dashboard Data
         fetch(`${API_URL}/api/dashboard`, {
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -101,6 +105,20 @@ export default function DashboardPage() {
                 setLoading(false);
             })
             .catch(() => setLoading(false));
+
+        // Fetch Reward Eligibility
+        fetch(`${API_URL}/api/rewards/eligibility`, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Accept': 'application/json',
+            },
+        })
+            .then(res => res.json())
+            .then(data => {
+                if (data.topScore !== undefined) setTopScore(data.topScore);
+                if (data.claimedRewards) setClaimedRewards(data.claimedRewards);
+            })
+            .catch(err => console.error('Failed to fetch eligibility:', err));
     }, []);
 
     useEffect(() => {
@@ -155,6 +173,37 @@ export default function DashboardPage() {
     const totalModules = 9;
     const totalVideos = 5;
     const totalKuis = 4;
+
+    const handleClaim = async (rewardType: string) => {
+        const token = localStorage.getItem('auth_token');
+        if (!token) return;
+
+        setClaimLoading(rewardType);
+        try {
+            const response = await fetch(`${API_URL}/api/rewards/claim`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                },
+                body: JSON.stringify({ reward_type: rewardType }),
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                alert(data.message);
+                setClaimedRewards(prev => [...prev, rewardType]);
+            } else {
+                alert(data.message || 'Gagal mengklaim hadiah.');
+            }
+        } catch (error) {
+            alert('Terjadi kesalahan koneksi.');
+        } finally {
+            setClaimLoading(null);
+        }
+    };
 
     const dashboardTourSteps: Step[] = [
         {
@@ -671,9 +720,17 @@ export default function DashboardPage() {
                                     <div className="flex justify-between items-center mb-3">
                                         <span className="text-xs font-semibold text-gray-500">Syarat: <span className="text-orange-400 inline-flex items-center gap-0.5"><Medal size={13} /> Medali Perunggu</span></span>
                                     </div>
-                                    {topScore >= 50 ? (
-                                        <button onClick={() => alert('Berhasil mengklaim E-Book! Tautan unduhan akan dikirim ke email Anda.')} className="w-full py-3 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-500 hover:scale-[1.02] text-white font-bold transition-all shadow-lg shadow-cyan-500/25">
-                                            Unduh E-Book
+                                    {claimedRewards.includes('ebook') ? (
+                                        <button disabled className="w-full py-3 rounded-xl bg-green-500/10 text-green-500 border border-green-500/20 font-bold flex items-center justify-center gap-2">
+                                            <CheckCircle2 size={18} /> Sudah Diklaim
+                                        </button>
+                                    ) : topScore >= 50 ? (
+                                        <button 
+                                            onClick={() => handleClaim('ebook')} 
+                                            disabled={claimLoading === 'ebook'}
+                                            className="w-full py-3 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-500 hover:scale-[1.02] text-white font-bold transition-all shadow-lg shadow-cyan-500/25 disabled:opacity-50"
+                                        >
+                                            {claimLoading === 'ebook' ? 'Memproses...' : 'Klaim E-Book'}
                                         </button>
                                     ) : (
                                         <button disabled className="w-full py-3 rounded-xl bg-gray-800 text-gray-500 font-bold cursor-not-allowed border border-gray-700 flex items-center justify-center gap-2">
@@ -699,9 +756,17 @@ export default function DashboardPage() {
                                     <div className="flex justify-between items-center mb-3">
                                         <span className="text-xs font-semibold text-gray-500">Syarat: <span className="text-slate-300 inline-flex items-center gap-0.5"><Medal size={13} /> Medali Perak</span></span>
                                     </div>
-                                    {topScore >= 75 ? (
-                                        <button onClick={() => alert('Kode Voucher Anda: DIVE-SILVER-15')} className="w-full py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-green-500 hover:scale-[1.02] text-white font-bold transition-all shadow-lg shadow-emerald-500/25">
-                                            Lihat Kode Voucher
+                                    {claimedRewards.includes('voucher') ? (
+                                        <button disabled className="w-full py-3 rounded-xl bg-green-500/10 text-green-500 border border-green-500/20 font-bold flex items-center justify-center gap-2">
+                                            <CheckCircle2 size={18} /> Sudah Diklaim
+                                        </button>
+                                    ) : topScore >= 75 ? (
+                                        <button 
+                                            onClick={() => handleClaim('voucher')} 
+                                            disabled={claimLoading === 'voucher'}
+                                            className="w-full py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-green-500 hover:scale-[1.02] text-white font-bold transition-all shadow-lg shadow-emerald-500/25 disabled:opacity-50"
+                                        >
+                                            {claimLoading === 'voucher' ? 'Memproses...' : 'Klaim Voucher'}
                                         </button>
                                     ) : (
                                         <button disabled className="w-full py-3 rounded-xl bg-gray-800 text-gray-500 font-bold cursor-not-allowed border border-gray-700 flex items-center justify-center gap-2">
@@ -727,13 +792,21 @@ export default function DashboardPage() {
                                     <div className="flex justify-between items-center mb-3">
                                         <span className="text-xs font-semibold text-gray-500">Syarat: <span className="text-yellow-400 inline-flex items-center gap-0.5"><Medal size={13} /> Medali Emas</span></span>
                                     </div>
-                                    {topScore >= 90 ? (
-                                        <button onClick={() => alert('Berhasil mendaftar! Detail akses VIP Zoom dikirim via email.')} className="w-full py-3 rounded-xl bg-gradient-to-r from-purple-500 to-fuchsia-500 hover:scale-[1.02] text-white font-bold transition-all shadow-lg shadow-purple-500/25">
-                                            Klaim Tiket VIP
+                                    {claimedRewards.includes('webinar') ? (
+                                        <button disabled className="w-full py-3 rounded-xl bg-green-500/10 text-green-500 border border-green-500/20 font-bold flex items-center justify-center gap-2">
+                                            <CheckCircle2 size={18} /> Sudah Diklaim
+                                        </button>
+                                    ) : topScore >= 90 ? (
+                                        <button 
+                                            onClick={() => handleClaim('webinar')} 
+                                            disabled={claimLoading === 'webinar'}
+                                            className="w-full py-3 rounded-xl bg-gradient-to-r from-purple-500 to-fuchsia-500 hover:scale-[1.02] text-white font-bold transition-all shadow-lg shadow-purple-500/25 disabled:opacity-50"
+                                        >
+                                            {claimLoading === 'webinar' ? 'Memproses...' : 'Klaim Tiket VIP'}
                                         </button>
                                     ) : (
                                         <button disabled className="w-full py-3 rounded-xl bg-gray-800 text-gray-500 font-bold cursor-not-allowed border border-gray-700 flex items-center justify-center gap-2">
-<Lock size={24} /> Terkunci (Butuh Nilai ≥ 90)
+                                            <Lock size={24} /> Terkunci (Butuh Nilai ≥ 90)
                                         </button>
                                     )}
                                 </div>
@@ -755,9 +828,17 @@ export default function DashboardPage() {
                                     <div className="flex justify-between items-center mb-3">
                                         <span className={`text-xs font-semibold ${isDark ? 'text-amber-200/50' : 'text-amber-900/50'}`}>Syarat: <span className="text-yellow-400 font-bold inline-flex items-center gap-0.5"><Trophy size={13} /> Trofi Ikan Mas</span></span>
                                     </div>
-                                    {topScore >= 100 ? (
-                                        <button onClick={() => alert('Isi formulir pengiriman di email Anda!')} className="w-full py-3 rounded-xl bg-gradient-to-r from-yellow-400 to-amber-500 hover:scale-[1.02] text-black font-black transition-all shadow-[0_0_20px_rgba(251,191,36,0.4)]">
-                                            Klaim T-Shirt Fisik
+                                    {claimedRewards.includes('tshirt') ? (
+                                        <button disabled className="w-full py-3 rounded-xl bg-green-500/10 text-green-500 border border-green-500/20 font-bold flex items-center justify-center gap-2">
+                                            <CheckCircle2 size={18} /> Sudah Diklaim
+                                        </button>
+                                    ) : topScore >= 100 ? (
+                                        <button 
+                                            onClick={() => handleClaim('tshirt')} 
+                                            disabled={claimLoading === 'tshirt'}
+                                            className="w-full py-3 rounded-xl bg-gradient-to-r from-yellow-400 to-amber-500 hover:scale-[1.02] text-black font-black transition-all shadow-[0_0_20px_rgba(251,191,36,0.4)] disabled:opacity-50"
+                                        >
+                                            {claimLoading === 'tshirt' ? 'Memproses...' : 'Klaim T-Shirt Fisik'}
                                         </button>
                                     ) : (
                                         <button disabled className="w-full py-3 rounded-xl bg-black/40 text-white/30 font-bold cursor-not-allowed border border-white/10 flex items-center justify-center gap-2">
