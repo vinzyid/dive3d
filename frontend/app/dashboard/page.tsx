@@ -130,7 +130,7 @@ export default function DashboardPage() {
         { icon: <Gift size={20} />, label: 'Klaim Hadiah', action: () => setActiveMenu(3) },
     ];
 
-    const userName = dashboardData?.user?.name || 'Pengguna';
+    const userName = dashboardData?.user?.name || (userRole === 'admin' ? 'Admin' : 'Pengguna');
     const xp = dashboardData?.user?.current_xp || 0;
     const targetXp = dashboardData?.user?.next_level_xp || 500;
     const level = dashboardData?.user?.level || 0;
@@ -218,7 +218,7 @@ export default function DashboardPage() {
                     {userRole === 'admin' && (
                         <div className="flex items-center gap-4 px-2">
                             <span className={`text-sm font-bold ${isDark ? 'text-white' : 'text-blue-900'}`}>
-                                Halo, {userName || 'Admin'}!
+                                Halo, {userName}!
                             </span>
                             <button
                                 onClick={() => {

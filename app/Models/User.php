@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use App\Models\Badge;
+use App\Models\Role;
 use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
@@ -24,6 +25,7 @@ class User extends Authenticatable
         'email',
         'password',
         'role',
+        'role_id',
     ];
 
     /**
@@ -54,5 +56,25 @@ class User extends Authenticatable
         return $this->belongsToMany(Badge::class, 'user_badges')
             ->withPivot('earned_at')
             ->withTimestamps();
+    }
+
+    public function assignedRole()
+    {
+        return $this->belongsTo(Role::class, 'role_id');
+    }
+
+    public function getRoleNameAttribute(): string
+    {
+        return strtolower($this->assignedRole?->name ?? $this->attributes['role'] ?? 'user');
+    }
+
+    public function isAdmin(): bool
+    {
+        return $this->role_name === 'admin';
+    }
+
+    public function isUser(): bool
+    {
+        return $this->role_name === 'user';
     }
 }
